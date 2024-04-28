@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+import os.path
+import sys
+
+whereami = os.path.split( os.path.realpath(__file__) )
+pathsplit = os.path.split(whereami[0])
+#print("here I am :", whereami, pathsplit)
+
+DEVMODPATH = [pathsplit[0],'/home/pi/Projects/moqputils']
+#print('Using DEVMODPATH=',DEVMODPATH)
+#os.chdir(pathsplit[0])
+
+for mypath in DEVMODPATH:
+        if ( os.path.exists(mypath) and \
+          (os.path.isfile(mypath) == False) ):
+            sys.path.insert(0, mypath)
+
+import argparse
+from __init__ import VERSION
+#print(VERSION, CALLLIST)
+#from logsreceived import logsReceived, csvlogsRecvd, htmlLogsRecvd
+
+USAGE = \
+"""
+mqpselogs
+"""
+
+DESCRIPTION = \
+"""
+Fetch soapbox comments from the MOQP database and make a web page 
+from them.
+"""
+
+EPILOG = \
+"""
+That is all!
+"""
+
+def parseMyArgs():
+    parser = argparse.ArgumentParser(\
+                    description = DESCRIPTION, usage = USAGE)
+    parser.add_argument('-v', '--version', 
+                        action='version', 
+                        version = VERSION)
+ 
+    parser.add_argument('-t', '--reportType',
+                                   default = 'csv',
+            help="""Set report type for output. Only valid if more than
+                    one report output type is avaible. Options are: 
+                    csv (Comma Separated Variables) for printing or
+                    for import to a spreadsheet, or 
+                    html for web page use.
+                    default value is csv""")
+
+    args = parser.parse_args()
+    return args
+    
+    
+if __name__ == '__main__':
+    args = parseMyArgs()
+    args.reportType = args.reportType.lower()
+    if (args.reportType == 'html'):
+        from soapbox.soapbox import htmlSoapBox
+        logs = htmlSoapBox()
+        print(logs.showRpt())
+
