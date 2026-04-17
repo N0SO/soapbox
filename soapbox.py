@@ -7,7 +7,7 @@ Update History is in file __init__.py
 """
 
 
-from soapbox.__init__ import VERSION
+from __init__ import VERSION
 from moqputils.moqpdbutils import *
 from moqputils.configs.moqpdbconfig import *
 from datetime import datetime
@@ -59,9 +59,21 @@ class SoapBox():
     def fetchComments(self):
         mydb = MOQPDBUtils(HOSTNAME, USER, PW, DBNAME)
         mydb.setCursorDict()
+        
+        sbq = f"""
+              select `MOQP_{YEAR}`.`LOGHEADER`.`ID` AS `ID`,
+                     `MOQP_{YEAR}`.`LOGHEADER`.`CALLSIGN` AS `CALLSIGN`,
+                     `MOQP_{YEAR}`.`LOGHEADER`.`OPERATORS` AS `OPERATORS`,
+                     `MOQP_{YEAR}`.`LOGHEADER`.`SOAPBOX` AS `SOAPBOX` from
+                     `MOQP_{YEAR}`.`LOGHEADER` where 
+                     `MOQP_{YEAR}`.`LOGHEADER`.`SOAPBOX` is not null and 
+                     `MOQP_{YEAR}`.`LOGHEADER`.`SOAPBOX` <> '' 
+                      order by `MOQP_{YEAR}`.`LOGHEADER`.`CALLSIGN`
+              """
+        sbv = """SELECT * FROM SOAPBOX_VIEW WHERE 1"""
 
-        dbData = mydb.read_query("""SELECT * FROM SOAPBOX_VIEW
-                                    WHERE 1""")
+        dbData = mydb.read_query(sbq)
+        #print(f'{sbq=}')
         if len(dbData) >=1 :
             for d in dbData:
                 station = Station(dbDat=d)
